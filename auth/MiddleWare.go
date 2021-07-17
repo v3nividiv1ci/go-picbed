@@ -2,7 +2,7 @@
 package auth
 
 import (
-	gin "github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin"
 	"go-picbed/database"
 	"go-picbed/model"
 	"net/http"

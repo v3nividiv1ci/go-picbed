@@ -20,7 +20,7 @@ func AutoRegister(username, password string) bool {
 		Username: username,
 		Password: string(EncryptedPassword),
 	}
-	DB.Create(&User)
+	DB.Table("users").Create(&User)
 	return true
 }
 
@@ -31,7 +31,7 @@ func Login(c *gin.Context) {
 	password := c.PostForm("password")
 	// if registered
 	var user model.User
-	DB.Where("Username = ?", username).First(&user)
+	DB.Table("users").Where("Username = ?", username).First(&user)
 	if user.ID == 0 {
 		if AutoRegister(username, password) == false {
 			c.JSON(http.StatusInternalServerError, gin.H{"code": 500, "msg": "encryption failed"})
