@@ -2,6 +2,7 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
+	"go-picbed/auth"
 	"go-picbed/database"
 	"go-picbed/model"
 	"golang.org/x/crypto/bcrypt"
@@ -26,10 +27,8 @@ func AutoRegister(username, password string) bool {
 func Login(c *gin.Context) {
 	DB := database.GetDB()
 	// get params
-	//username := c.PostForm("username")
-	//password := c.PostForm("password")
-	username := c.Param("username")
-	password := c.Param("password")
+	username := c.PostForm("username")
+	password := c.PostForm("password")
 	// if registered
 	var user model.User
 	DB.Where("Username = ?", username).First(&user)
@@ -46,10 +45,17 @@ func Login(c *gin.Context) {
 		}
 	}
 	// issue token
-	// jwt稍后写 阿巴阿巴
-	token := "114514"
+	token, err := auth.TokenRelease(user)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"code": 500, "msg": "token release failed"})
+	}
 
 	c.JSON(http.StatusOK,
 		gin.H{"code": 200, "data": gin.H{"token": token}, "msg": "successfully logged in"})
 
+}
+
+func Test(c *gin.Context) {
+	user, _ := c.Get("user")
+	c.JSON(http.StatusOK, gin.H{"code": 200, "data": user})
 }
