@@ -1,12 +1,12 @@
 package model
 
 import (
-	"github.com/google/uuid"
+	//"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type Pic struct {
 	gorm.Model
-	Uuid   uuid.UUID
+	Uuid   string
 	Master string
 }
