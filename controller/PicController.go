@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"log"
-	"strings"
+	"os"
 
 	//"github.com/nu7hatch/gouuid"
 	"go-picbed/database"
@@ -12,14 +12,6 @@ import (
 	"go-picbed/pics"
 	"net/http"
 )
-
-func Cmp(userT, userJ string) bool {
-	if strings.Compare(userT, userJ) == 0 {
-		return true
-	} else {
-		return false
-	}
-}
 
 func PicAdd(c *gin.Context) {
 	u, _ := c.Get("user")
@@ -58,17 +50,43 @@ func PicDownload(c *gin.Context) {
 	// get param
 	imgU := c.PostForm("ImageUUID")
 
-	// find all pics named imgName while master named sender
+	// find where uuid and master both fit
 	var img model.Pic
 	result := TP.Where("master = ? AND uuid = ?", sender, imgU).Find(&img)
 	if result.RowsAffected == 0 {
 		// 这个status code是对的吗,,
-		c.JSON(http.StatusNotFound, gin.H{"code": 404, "msg": "pic not found"})
+		// assume that uuid from the front end is legal
+		c.JSON(http.StatusUnauthorized, gin.H{"code": 401, "msg": "permission denied"})
 		return
 	}
+
 	c.FileAttachment(pics.Root+img.Uuid+".jpeg", imgU)
 
 	// 好像会panic..
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "successfully downloaded"})
 
+}
+
+func PicDelete(c *gin.Context) {
+	u, _ := c.Get("user")
+	sender := u.(model.User).Username
+
+	DB := database.GetDB()
+	TP := DB.Table("pics")
+
+	imgU := c.PostForm("ImageUUID")
+	var img model.Pic
+	result := TP.Where("master = ? AND uuid = ?", sender, imgU).Find(&img)
+	if result.RowsAffected == 0 {
+		c.JSON(http.StatusUnauthorized, gin.H{"code": 401, "msg": "permission denied"})
+		return
+	}
+	err := os.Remove(pics.Root + imgU + ".jpeg")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"code": 500, "msg": "delete failed"})
+		return
+	}
+
+	TP.Where("uuid = ?", imgU).Delete(&img)
+	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "successfully deleted"})
 }

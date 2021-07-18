@@ -13,5 +13,6 @@ func CollectRoute(r *gin.Engine) *gin.Engine {
 	r.GET("/api/pic/download", auth.JwtMiddleWare(), controller.PicDownload)
 	// 需要鉴权还需要比对用户所以感觉不是很方便用static？
 	//r.Static("/image", pics.Root)
+	r.DELETE("/api/pic/delete", auth.JwtMiddleWare(), controller.PicDelete)
 	return r
 }
