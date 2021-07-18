@@ -7,6 +7,7 @@ import (
 
 type Pic struct {
 	gorm.Model
-	Uuid   string
-	Master string
+	PicName string
+	Uuid    string
+	Master  string
 }
