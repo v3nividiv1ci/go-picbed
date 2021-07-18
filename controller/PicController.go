@@ -90,3 +90,14 @@ func PicDelete(c *gin.Context) {
 	TP.Where("uuid = ?", imgU).Delete(&img)
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "successfully deleted"})
 }
+
+func PicReveal(c *gin.Context) {
+	u, _ := c.Get("user")
+	sender := u.(model.User).Username
+
+	DB := database.GetDB()
+	TP := DB.Table("pics")
+	var imgs []model.Pic
+	TP.Select("uuid", "pic_name").Where("master = ?", sender).Find(&imgs)
+	c.JSON(http.StatusOK, gin.H{"code": 200, "username": sender, "pic_urls": imgs})
+}
